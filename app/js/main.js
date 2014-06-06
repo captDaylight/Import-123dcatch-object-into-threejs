@@ -24,7 +24,15 @@ require({
 
                 //var geometry = new THREE.CubeGeometry(5,10,5);
 
-            mesh = new THREE.Mesh( geometry, new THREE.MeshNormalMaterial() );
+
+            wireMaterial = new THREE.MeshBasicMaterial({
+                color: 0xff0000,
+                wireframe: true
+            });
+
+            var phong = new THREE.MeshNormalMaterial();
+
+            mesh = new THREE.Mesh( geometry, wireMaterial );
             mesh.scale.set( 10, 10, 10 );
             mesh.position.y = 0;
             mesh.position.x = 0;
