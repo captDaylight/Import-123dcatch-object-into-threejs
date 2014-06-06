@@ -150,7 +150,7 @@ require({
                 var callbackMale = function ( geometry, materials ) { createScene( geometry, materials, 90, FLOOR, 50, 105 ) };
                 var callbackFemale = function ( geometry, materials ) { createScene( geometry, materials, -80, FLOOR, 50, 0 ) };
 
-                loader.load( "obj/male02/Male02_dds.js", callbackMale );
+                loader.load( "object/sculpt.js", callbackMale );
                 loader.load( "obj/female02/Female02_slim.js", callbackFemale );
 
                 //
