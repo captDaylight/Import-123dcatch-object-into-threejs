@@ -1,152 +1,202 @@
 require({
     baseUrl: 'js',
     // three.js should have UMD support soon, but it currently does not
-    shim: { 'vendor/three': { exports: 'THREE' } }
+    shim: { 
+        'vendor/three': { exports: 'THREE' },
+        'vendor/lodash': {exports: '_'}    
+    }
 }, [
     'vendor/three'
 ], function(THREE) {
 
-    var SCREEN_WIDTH = window.innerWidth;
-    var SCREEN_HEIGHT = window.innerHeight;
-    var FLOOR = -250;
+            var SCREEN_WIDTH = window.innerWidth;
+            var SCREEN_HEIGHT = window.innerHeight;
+            var FLOOR = -250;
 
-    var container;
+            var container;
 
-    var camera, scene;
-    var canvasRenderer, webglRenderer;
+            var camera, scene;
+            var canvasRenderer, webglRenderer;
 
-    var mesh, zmesh, geometry;
+            var mesh, zmesh, geometry;
 
-    var mouseX = 0, mouseY = 0;
+            var mouseX = 0, mouseY = 0;
 
-    var windowHalfX = window.innerWidth / 2;
-    var windowHalfY = window.innerHeight / 2;
+            var windowHalfX = window.innerWidth / 2;
+            var windowHalfY = window.innerHeight / 2;
 
-    var render_canvas = 1, render_gl = 1;
-    var has_gl = 0;
+            var render_canvas = 1, render_gl = 1;
+            var has_gl = 0;
 
-    var bcanvas = document.getElementById( "rcanvas" );
-    var bwebgl = document.getElementById( "rwebgl" );
+            var bcanvas = document.getElementById( "rcanvas" );
+            var bwebgl = document.getElementById( "rwebgl" );
 
-    document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+            document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 
-    init();
-    animate();
+            init();
+            animate();
 
-    render_canvas = !has_gl;
-    bwebgl.style.display = has_gl ? "inline" : "none";
-    bcanvas.className = render_canvas ? "button" : "button inactive";
+            render_canvas = !has_gl;
+            bwebgl.style.display = has_gl ? "inline" : "none";
+            bcanvas.className = render_canvas ? "button" : "button inactive";
 
-    function init() {
+            function init() {
 
-        container = document.getElementById( 'container' );
+                container = document.getElementById( 'container' );
 
-        camera = new THREE.PerspectiveCamera( 75, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 100000 );
-        camera.position.z = 500;
+                camera = new THREE.PerspectiveCamera( 75, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 100000 );
+                camera.position.z = 500;
 
-        scene = new THREE.Scene();
+                scene = new THREE.Scene();
 
 
-        // LIGHTS
+                // LIGHTS
 
-        var ambient = new THREE.AmbientLight( 0x221100 );
-        scene.add( ambient );
+                var ambient = new THREE.AmbientLight( 0x221100 );
+                scene.add( ambient );
 
-        var directionalLight = new THREE.DirectionalLight( 0xffeedd, 1.5 );
-        directionalLight.position.set( 0, 70, 100 ).normalize();
-        scene.add( directionalLight );
+                var directionalLight = new THREE.DirectionalLight( 0xffeedd, 1.5 );
+                directionalLight.position.set( 0, -70, 100 ).normalize();
+                scene.add( directionalLight );
 
-        // RENDERER
+                // RENDERER
 
-        if ( render_gl ) {
+                if ( render_gl ) {
 
-            try {
+                    try {
 
-                webglRenderer = new THREE.WebGLRenderer();
-                webglRenderer.setClearColor( 0xffffff );
-                webglRenderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
-                webglRenderer.domElement.style.position = "relative";
+                        webglRenderer = new THREE.WebGLRenderer();
+                        webglRenderer.setClearColor( 0xffffff );
+                        webglRenderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+                        webglRenderer.domElement.style.position = "relative";
 
-                container.appendChild( webglRenderer.domElement );
+                        container.appendChild( webglRenderer.domElement );
 
-                has_gl = 1;
+                        has_gl = 1;
+
+                    }
+                    catch (e) {
+                    }
+
+                }
+
+                if ( render_canvas ) {
+
+                    canvasRenderer = new THREE.CanvasRenderer();
+                    canvasRenderer.setClearColor( 0xffffff );
+                    canvasRenderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+                    container.appendChild( canvasRenderer.domElement );
+
+                }
+
+
+
+                var loader = new THREE.JSONLoader();
+                var callbackMale = function ( geometry, materials ) { createScene( geometry, materials, 0, 0, 0, 105 ) };
+
+                loader.load( "object/rock.js", callbackMale );
+
+                //
+
+                window.addEventListener( 'resize', onWindowResize, false );
 
             }
-            catch (e) {
+
+            function onWindowResize() {
+
+                windowHalfX = window.innerWidth / 2;
+                windowHalfY = window.innerHeight / 2;
+
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+
+                if ( webglRenderer ) webglRenderer.setSize( window.innerWidth, window.innerHeight );
+                if ( canvasRenderer ) canvasRenderer.setSize( window.innerWidth, window.innerHeight );
+
             }
 
-        }
+            function createScene( geometry, materials, x, y, z, b ) {
 
-        if ( render_canvas ) {
+                console.log(materials);
 
-            canvasRenderer = new THREE.CanvasRenderer();
-            canvasRenderer.setClearColor( 0xffffff );
-            canvasRenderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
-            container.appendChild( canvasRenderer.domElement );
+                _.each(materials, function (mat) {
+                    mat.color.r = mat.color.b = mat.color.g = .933333;
+                });
 
-        }
+                zmesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial( materials ) );
+                zmesh.position.set( x, y, z );
+                zmesh.scale.set( 10, 10, 10 );
+                scene.add( zmesh );
 
-        var loader = new THREE.JSONLoader();
-        var callbackMale = function ( geometry, materials ) { createScene( geometry, materials, 0, 0, 0, 105 ) };
+                createMaterialsPalette( materials, 100, b );
 
-        loader.load( "object/sculpt.js", callbackMale );
+            }
 
-        //
+            function createMaterialsPalette( materials, size, bottom ) {
 
-        window.addEventListener( 'resize', onWindowResize, false );
+                for ( var i = 0; i < materials.length; i ++ ) {
 
-    }
+                    // material
 
-    function onWindowResize() {
+                    mesh = new THREE.Mesh( new THREE.PlaneGeometry( size, size ), materials[i] );
+                    mesh.position.x = i * (size + 5) - ( ( materials.length - 1 )* ( size + 5 )/2);
+                    mesh.position.y = FLOOR + size/2 + bottom;
+                    mesh.position.z = -100;
+                    scene.add( mesh );
 
-        windowHalfX = window.innerWidth / 2;
-        windowHalfY = window.innerHeight / 2;
+                    // number
 
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
+                    var x = document.createElement( "canvas" );
+                    var xc = x.getContext( "2d" );
+                    x.width = x.height = 128;
+                    xc.shadowColor = "#000";
+                    xc.shadowBlur = 7;
+                    xc.fillStyle = "orange";
+                    xc.font = "50pt arial bold";
+                    xc.fillText( i, 10, 64 );
 
-        if ( webglRenderer ) webglRenderer.setSize( window.innerWidth, window.innerHeight );
-        if ( canvasRenderer ) canvasRenderer.setSize( window.innerWidth, window.innerHeight );
+                    var xm = new THREE.MeshBasicMaterial( { map: new THREE.Texture( x ), transparent: true } );
+                    xm.map.needsUpdate = true;
 
-    }
+                    mesh = new THREE.Mesh( new THREE.PlaneGeometry( size, size ), xm );
+                    mesh.position.x = i * ( size + 5 ) - ( ( materials.length - 1 )* ( size + 5 )/2);
+                    mesh.position.y = FLOOR + size/2 + bottom;
+                    mesh.position.z = -99;
 
-    function createScene( geometry, materials, x, y, z, b ) {
+                    scene.add( mesh );
 
-        zmesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial( materials ) );
-        zmesh.position.set( x, y, z );
-        zmesh.scale.set( 10, 10, 10 );
-        scene.add( zmesh );
+                }
 
-        // createMaterialsPalette( materials, 100, b );
+            }
 
-    }
+            function onDocumentMouseMove(event) {
 
-    function onDocumentMouseMove(event) {
+                mouseX = ( event.clientX - windowHalfX );
+                mouseY = ( event.clientY - windowHalfY );
 
-        mouseX = ( event.clientX - windowHalfX );
-        mouseY = ( event.clientY - windowHalfY );
+            }
 
-    }
+            //
 
-    function animate() {
+            function animate() {
 
-        requestAnimationFrame( animate );
+                requestAnimationFrame( animate );
 
-        render();
+                render();
 
-    }
+            }
 
-    function render() {
+            function render() {
 
-        camera.position.x += ( mouseX - camera.position.x ) * .05;
-        camera.position.y += ( - mouseY - camera.position.y ) * .05;
+                camera.position.x += ( mouseX - camera.position.x ) * .05;
+                camera.position.y += ( - mouseY - camera.position.y ) * .05;
 
-        camera.lookAt( scene.position );
+                camera.lookAt( scene.position );
 
-        if ( render_gl && has_gl ) webglRenderer.render( scene, camera );
-        if ( render_canvas ) canvasRenderer.render( scene, camera );
+                if ( render_gl && has_gl ) webglRenderer.render( scene, camera );
+                if ( render_canvas ) canvasRenderer.render( scene, camera );
 
-    }
+            }
 
 
 });

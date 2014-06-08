@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "dependencies": {
     "threejs": "",
-    "requirejs": "~2.1.9"
+    "requirejs": "~2.1.9",
+    "lodash": ""
   }
 }
 
