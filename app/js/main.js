@@ -12,6 +12,7 @@ require({
             var SCREEN_WIDTH = window.innerWidth;
             var SCREEN_HEIGHT = window.innerHeight;
             var FLOOR = -250;
+            var OBJ_SCALE = 20;
 
             var container;
 
@@ -125,49 +126,12 @@ require({
 
                 zmesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial( materials ) );
                 zmesh.position.set( x, y, z );
-                zmesh.scale.set( 10, 10, 10 );
+                zmesh.scale.set( OBJ_SCALE, OBJ_SCALE, OBJ_SCALE );
                 scene.add( zmesh );
 
-                createMaterialsPalette( materials, 100, b );
 
             }
 
-            function createMaterialsPalette( materials, size, bottom ) {
-
-                for ( var i = 0; i < materials.length; i ++ ) {
-
-                    // material
-
-                    mesh = new THREE.Mesh( new THREE.PlaneGeometry( size, size ), materials[i] );
-                    mesh.position.x = i * (size + 5) - ( ( materials.length - 1 )* ( size + 5 )/2);
-                    mesh.position.y = FLOOR + size/2 + bottom;
-                    mesh.position.z = -100;
-                    scene.add( mesh );
-
-                    // number
-
-                    var x = document.createElement( "canvas" );
-                    var xc = x.getContext( "2d" );
-                    x.width = x.height = 128;
-                    xc.shadowColor = "#000";
-                    xc.shadowBlur = 7;
-                    xc.fillStyle = "orange";
-                    xc.font = "50pt arial bold";
-                    xc.fillText( i, 10, 64 );
-
-                    var xm = new THREE.MeshBasicMaterial( { map: new THREE.Texture( x ), transparent: true } );
-                    xm.map.needsUpdate = true;
-
-                    mesh = new THREE.Mesh( new THREE.PlaneGeometry( size, size ), xm );
-                    mesh.position.x = i * ( size + 5 ) - ( ( materials.length - 1 )* ( size + 5 )/2);
-                    mesh.position.y = FLOOR + size/2 + bottom;
-                    mesh.position.z = -99;
-
-                    scene.add( mesh );
-
-                }
-
-            }
 
             function onDocumentMouseMove(event) {
 
